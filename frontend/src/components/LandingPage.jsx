@@ -17,6 +17,8 @@ import firebase from "firebase";
 
 import HereMap from './HereMap';
 
+import { fetchAnimals } from '../AnimalAPI';
+
 const styles = {
   step: {
     marginLeft: '10px',
@@ -68,7 +70,6 @@ class LandingPage extends React.Component {
     };
 
     navigator.geolocation.getCurrentPosition(async (position) => {
-
       const {
         latitude,
         longitude
@@ -77,28 +78,11 @@ class LandingPage extends React.Component {
         longitude: -122.396729
       };
 
-      const res = await this.fetchAnimals(latitude, longitude);
+      const res = await fetchAnimals(latitude, longitude);
       this.setState({
         nearbyPostings: res.data
       });
     }, () => {}, options);
-  }
-
-  fetchAnimals = async (
-    latitude,
-    longitude
-  ) => {
-    try {
-      const res = await axios.post(
-        'http://localhost:5000/get_nearby_images', {
-          latitude: latitude,
-          longitude: longitude,
-        });
-        console.log(res)
-      return res;
-    } catch (e) {
-      alert(e);
-    }
   }
 
   handleUploadStart = () => this.setState({ isUploading: true, progress: 0 });
@@ -191,7 +175,7 @@ class LandingPage extends React.Component {
       </Grid.Row>
     </Grid>
 
-    <HereMap style={styles.sectionMap}/>
+    <HereMap style={styles.sectionMap} />
     </div>
   }
 }

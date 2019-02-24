@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, current_app
 import pyrebase
 # from clarifai.rest import ClarifaiApp
 import requests
@@ -9,7 +9,10 @@ from GPSPhoto import gpsphoto as gp
 import urllib
 import os
 from geopy.distance import geodesic
+import urllib.request
 
+import logging
+logging.getLogger().addHandler(logging.StreamHandler())
 
 app = Flask(__name__)
 CORS(app)
@@ -45,18 +48,22 @@ def get_url(pth):
     print(url)
     return url
 
-#downloads image temporarily, extracts location data if possible and returns
+# downloads image temporarily, extracts location data if possible and returns
+
+
 def get_image_location(url):
-    urllib.request.urlretrieve(url,"tempimg.jpg")
+    urllib.request.urlretrieve(url, "tempimg.jpg")
     data = gp.getGPSData("tempimg.jpg")
     lat = data.get("Latitude")
     longe = data.get("Longitude")
     os.remove("tempimg.jpg")
-    if(lat!=None and longe!=None):
-        return {"latitude":lat, "longitude":longe}
+    if(lat != None and longe != None):
+        return {"latitude": lat, "longitude": longe}
     return None
 
-#classigies any image with the general classifier
+# classigies any image with the general classifier
+
+
 def classify_image(url):
     data = '''
     {
@@ -82,8 +89,8 @@ def classify_image(url):
     return raw_data
 
 
-#function to get nearby images given a latitude and longitude for the center point
-#returns list of nearby images with user, classification, distance, and latitude/longitude
+# function to get nearby images given a latitude and longitude for the center point
+# returns list of nearby images with user, classification, distance, and latitude/longitude
 @app.route("/get_nearby_images", methods=["GET", "POST"])
 def get_nearby_images():
     print("getting nearby images")
@@ -91,22 +98,25 @@ def get_nearby_images():
     data = request.get_json(force=True)
     latitude = data.get('latitude')
     longitude = data.get('longitude')
-    center = (latitude,longitude)
-    MAX_DIST = 5000 #maximum distance in miles (change to smaller number)
+    center = (latitude, longitude)
+    MAX_DIST = 5000  # maximum distance in miles (change to smaller number)
     near_list = []
     users_data = db.child('users').get()
     for user in users_data.each():
         udata = user.val()
         for k in udata.keys():
-            location = (udata[k].get('location').get('latitude'), udata[k].get('location').get('longitude'))
-            dist = geodesic(center,location).miles
-            if(dist<MAX_DIST):
-                udata[k]['distance_from_center'] = dist 
+            location = (udata[k].get('location').get('latitude'),
+                        udata[k].get('location').get('longitude'))
+            dist = geodesic(center, location).miles
+            if(dist < MAX_DIST):
+                udata[k]['distance_from_center'] = dist
                 near_list.append(udata[k])
     print(near_list)
     return json.dumps(near_list)
 
-#function to save image properties to database
+# function to save image properties to database
+
+
 @app.route("/save_image", methods=["GET", "POST"])
 def save_image_props_to_database():
     print("got")
@@ -118,13 +128,24 @@ def save_image_props_to_database():
     longitude = data.get('longitude')
     classification = classify_image(url)[0].get('name')
     loc = get_image_location(url)
-    new_datum = {"user": user, "url": url, "location": {
-        "latitude": latitude, "longitude": longitude}, "classification": classification}
-    if(loc!=None):
+    new_datum = {
+        "user": user,
+        "url": url,
+        "location": {"latitude": latitude, "longitude": longitude},
+        "classification": classification}
+    if(loc != None):
         new_datum['location'] = loc
     print(new_datum)
 
     return "saved"
+
+
+@app.route("/animals/<name>", methods=["GET"])
+def get_animal(name):
+    contents = urllib.request.urlopen(
+        f"https://a-z-animals.com/animals/{name}").read()
+    print(contents)
+    return contents
     # users = db.child('users').get()
 
 # print(get_url("images/test.jpg"))

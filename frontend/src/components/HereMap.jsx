@@ -11,6 +11,9 @@ import {
   ClipLoader
 } from 'react-spinners';
 import axios from 'axios';
+import {
+  fetchAnimals
+} from '../AnimalAPI';
 
 class HereMap extends React.Component {
 
@@ -21,7 +24,6 @@ class HereMap extends React.Component {
     } = props;
 
     this.style = style;
-
     this.platform = new window.H.service.Platform({
       'app_id': '4c44HqHW1MFRVHTOF77q',
       'app_code': 'BsTdDoavvrz6EFyyqFn1Qw'
@@ -71,9 +73,6 @@ class HereMap extends React.Component {
         });
 
 
-      var bubble = new window.H.ui.InfoBubble(coords, {
-        content: 'squirrel'
-      });
 
       // Obtain the default map types from the platform object
       const maptypes = this.platform.createDefaultLayers();
@@ -89,9 +88,16 @@ class HereMap extends React.Component {
           }
         });
       var ui = window.H.ui.UI.createDefault(map, maptypes, 'en-US');
-      ui.addBubble(bubble);
+
+      const res = await fetchAnimals(latitude, latitude);
+      res.data.forEach((posting) => {
+        if (!posting.classification) return;
+        const bubble = new window.H.ui.InfoBubble(coords, {
+          content: posting.classification
+        });
+        ui.addBubble(bubble);
+      });
       map.setCenter(coords);
-      map.addObject(marker);
     }, () => {}, options);
   }
 
