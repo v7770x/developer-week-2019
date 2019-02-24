@@ -9,6 +9,9 @@ import {
 import FileUploader from 'react-firebase-file-uploader';
 import CustomUploadButton from 'react-firebase-file-uploader/lib/CustomUploadButton';
 import axios from 'axios';
+import {
+  ClipLoader
+} from 'react-spinners';
 
 import firebase from "firebase";
 
@@ -122,7 +125,16 @@ class LandingPage extends React.Component {
         borderRadius: 4,
         display: 'block'}}
       >
-        Upload Image
+        {
+          this.state.isUploading?
+          <ClipLoader
+            sizeUnit={"px"}
+            size={20}
+            color={'#123abc'}
+            loading={this.state.isUploading}
+          /> :
+          <span>Upload Image</span>
+        }
       </CustomUploadButton>
     </div>
     <div style={styles.sectionOtherSpottings}>Other Spottings Near You!</div>
