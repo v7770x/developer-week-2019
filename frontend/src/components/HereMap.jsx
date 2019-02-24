@@ -40,6 +40,7 @@ class HereMap extends React.Component {
       this.setState({
         loading: false
       })
+
       const {
         latitude,
         longitude
@@ -47,6 +48,24 @@ class HereMap extends React.Component {
         latitude: 37.787672,
         longitude: -122.396729
       };
+
+      // var icon = new window.H.map.Icon('pokemon.png');
+      // Create an icon object, an object with geographic coordinates and a marker:
+      var icon = new window.H.map.Icon(
+          'http://localhost:3000/pokemon.png'),
+        coords = {
+          lat: latitude,
+          lng: longitude
+        },
+        marker = new window.H.map.Marker(coords, {
+          icon: icon
+        });
+
+
+      var bubble = new window.H.ui.InfoBubble(coords, {
+        content: 'squirrel'
+      });
+
       // Obtain the default map types from the platform object
       const maptypes = this.platform.createDefaultLayers();
 
@@ -54,12 +73,16 @@ class HereMap extends React.Component {
       const map = new window.H.Map(
         document.getElementById('mapContainer'),
         maptypes.normal.map, {
-          zoom: 12,
+          zoom: 13,
           center: {
             lng: longitude,
             lat: latitude
           }
         });
+      var ui = window.H.ui.UI.createDefault(map, maptypes, 'en-US');
+      ui.addBubble(bubble);
+      map.setCenter(coords);
+      map.addObject(marker);
     });
   }
 
