@@ -13,8 +13,6 @@ from geopy.distance import geodesic
 
 app = Flask(__name__)
 CORS(app)
-# classifier = ClarifaiApp(api_key='53785869e72f4901a7f93891241cdc10')
-# model = classifier.public_models.general_model
 
 
 config = {
@@ -27,8 +25,6 @@ config = {
 
 firebase = pyrebase.initialize_app(config)
 
-# auth = firebase.auth()
-# user = auth.sign_in_with_email_and_password("khazanahamericas@gmail.com", "kai-2019")
 
 db = firebase.database()
 storage = firebase.storage()
@@ -49,6 +45,7 @@ def get_url(pth):
     print(url)
     return url
 
+#downloads image temporarily, extracts location data if possible and returns
 def get_image_location(url):
     urllib.request.urlretrieve(url,"tempimg.jpg")
     data = gp.getGPSData("tempimg.jpg")
@@ -59,6 +56,7 @@ def get_image_location(url):
         return {"latitude":lat, "longitude":longe}
     return None
 
+#classigies any image with the general classifier
 def classify_image(url):
     data = '''
     {
@@ -72,64 +70,43 @@ def classify_image(url):
         }
       ]
     }'''
-    # data = '{\n     "inputs": [\n {\n   "data": { \n"image": {\n  "url":' +'https://en.wikipedia.org/wiki/Food#/media/File:Good_Food_Display_-_NCI_Visuals_Online.jpg'+'           }\n }\n   ]}'
-    # data = {
-    #     "inputs":[
-    #         {"data":}
-    #     ]
-    # }
     headers = {'Authorization': 'Key 53785869e72f4901a7f93891241cdc10',
                'Content-type': 'application/json'}
     res = requests.post(url="https://api.clarifai.com/v2/models/aaa03c23b3724a16a56b629203edc62c/versions/aa7f35c01e0642fda5cf400f543e7c40/outputs",
                         headers=headers, data=data)
-    # res = requests.post(url="https://api.clarifai.com/v2/models/aaa03c23b3724a16a56b629203edc62c/versions/aa7f35c01e0642fda5cf400f543e7c40/outputs",
-    #     data=data,
-    #       headers= headers)
-    # string = res.read().decode('utf-8')
+
     txt = res.json()
-    # print(txt.get('outputs'))
-    # print(type(txt))
+
     raw_data = txt.get('outputs')[0].get('data').get('concepts')
-    # print(response)
-    # return url
+
     return raw_data
 
-# url = get_url("images/test.jpg")
-# print(url)
 
-
+#function to get nearby images given a latitude and longitude for the center point
+#returns list of nearby images with user, classification, distance, and latitude/longitude
 @app.route("/get_nearby_images", methods=["GET", "POST"])
 def get_nearby_images():
-    print("got")
+    print("getting nearby images")
     #
     data = request.get_json(force=True)
     latitude = data.get('latitude')
     longitude = data.get('longitude')
     center = (latitude,longitude)
-    MAX_DIST = 5000 #maximum distance in miles
+    MAX_DIST = 5000 #maximum distance in miles (change to smaller number)
     near_list = []
     users_data = db.child('users').get()
     for user in users_data.each():
         udata = user.val()
         for k in udata.keys():
-            # print(udata[k])
             location = (udata[k].get('location').get('latitude'), udata[k].get('location').get('longitude'))
             dist = geodesic(center,location).miles
             if(dist<MAX_DIST):
                 udata[k]['distance_from_center'] = dist 
                 near_list.append(udata[k])
-            # print(location)
     print(near_list)
-    # db.child("users").child(user).push(new_datum)
-
-    # check if its been added
-    
-
-    # users = db.child('users').get()
-    # print(users.val())
-
     return json.dumps(near_list)
 
+#function to save image properties to database
 @app.route("/save_image", methods=["GET", "POST"])
 def save_image_props_to_database():
     print("got")
@@ -147,26 +124,8 @@ def save_image_props_to_database():
         new_datum['location'] = loc
     print(new_datum)
 
-    # db.child("users").child(user).push(new_datum)
-
-    # check if its been added
-    
-
-    # users = db.child('users').get()
-    # print(users.val())
-
     return "saved"
-    #
     # users = db.child('users').get()
-    # print(users.val())
-    # db.child("users").push()
-    # new_datum = {"user":user,"url": url, "location": {"latitude":latitude,"longitude":longitude}}
-    # db.child("users").child(user).push(new_datum)
-
-# save_image_props_to_database("test", url, 10,10)
-# json_obj = json.loads(res.text)
-# print(json_obj.get('data'))
-# classify_image(get_url("images/test.jpg"))
 
 # print(get_url("images/test.jpg"))
 # upload_image("images/testpep.jpg")
