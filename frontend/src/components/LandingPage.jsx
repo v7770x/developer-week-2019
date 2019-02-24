@@ -8,6 +8,7 @@ import {
 } from 'semantic-ui-react'
 import FileUploader from 'react-firebase-file-uploader';
 import CustomUploadButton from 'react-firebase-file-uploader/lib/CustomUploadButton';
+import axios from 'axios';
 
 import firebase from "firebase";
 
@@ -66,15 +67,27 @@ class LandingPage extends React.Component {
   };
   handleUploadSuccess = filename => {
     this.setState({ avatar: filename, progress: 100, isUploading: false });
-    firebase
-      .storage()
-      .ref("images")
-      .child(filename)
-      .getDownloadURL()
-      .then(url => {
-        console.log(url);
-        this.setState({ newUrl: url })
-      });
+    navigator.geolocation.getCurrentPosition((position) => {
+      firebase
+        .storage()
+        .ref("images")
+        .child(filename)
+        .getDownloadURL()
+        .then(url => {
+          axios.post('http://localhost:5000/save_image', {
+            user: 'Fred',
+            url: url,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          })
+          .then(function (response) {
+            console.log(response);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+        });
+    });
   };
 
   render = () => {
