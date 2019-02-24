@@ -184,7 +184,7 @@ class LandingPage extends React.Component {
           this.state.nearbyPostings.map((posting, i) => {
             if (i >= 5) return null;
             return <Grid.Column key={i}>
-                <Image src={posting.url} />
+                <Image src={posting.url} className='squareImage' style={{width: '200px', height: '200px'}}/>
               </Grid.Column>
           })
         }
