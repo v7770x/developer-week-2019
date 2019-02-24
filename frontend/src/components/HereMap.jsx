@@ -90,7 +90,10 @@ class HereMap extends React.Component {
     const res = await fetchAnimals(latitude, latitude);
     res.data.forEach((posting) => {
       if (!posting.classification) return;
-      const bubble = new window.H.ui.InfoBubble(coords, {
+      const bubble = new window.H.ui.InfoBubble({
+        lat: posting.latitude,
+        lng: posting.longitude
+      }, {
         content: posting.classification
       });
       ui.addBubble(bubble);
