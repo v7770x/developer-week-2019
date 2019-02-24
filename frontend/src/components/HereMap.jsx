@@ -10,6 +10,7 @@ import {
 import {
   ClipLoader
 } from 'react-spinners';
+import axios from 'axios';
 
 class HereMap extends React.Component {
 
@@ -35,7 +36,14 @@ class HereMap extends React.Component {
     this.setState({
       loading: true
     })
-    navigator.geolocation.getCurrentPosition((position) => {
+
+    var options = {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0
+    };
+
+    navigator.geolocation.getCurrentPosition(async (position) => {
       console.log(position);
       this.setState({
         loading: false
@@ -48,6 +56,7 @@ class HereMap extends React.Component {
         latitude: 37.787672,
         longitude: -122.396729
       };
+
 
       // var icon = new window.H.map.Icon('pokemon.png');
       // Create an icon object, an object with geographic coordinates and a marker:
@@ -83,7 +92,7 @@ class HereMap extends React.Component {
       ui.addBubble(bubble);
       map.setCenter(coords);
       map.addObject(marker);
-    });
+    }, () => {}, options);
   }
 
   render = () => {

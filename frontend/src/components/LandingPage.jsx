@@ -48,7 +48,8 @@ class LandingPage extends React.Component {
     this.state = {
       isUploading: false,
       progress: 0,
-      newUrl: ''
+      newUrl: '',
+      nearbyPostings: []
     }
     var config = {
         "apiKey": "AIzaSyAviP5BdXqcBr409cY78pu0goV60t_uofY",
@@ -59,7 +60,46 @@ class LandingPage extends React.Component {
     firebase.initializeApp(config);
   }
 
-  async componentWillMount() {}
+  async componentWillMount() {
+    var options = {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0
+    };
+
+    navigator.geolocation.getCurrentPosition(async (position) => {
+
+      const {
+        latitude,
+        longitude
+      } = position.coords || {
+        latitude: 37.787672,
+        longitude: -122.396729
+      };
+
+      const res = await this.fetchAnimals(latitude, longitude);
+      this.setState({
+        nearbyPostings: res.data
+      });
+    }, () => {}, options);
+  }
+
+  fetchAnimals = async (
+    latitude,
+    longitude
+  ) => {
+    try {
+      const res = await axios.post(
+        'http://localhost:5000/get_nearby_images', {
+          latitude: latitude,
+          longitude: longitude,
+        });
+        console.log(res)
+      return res;
+    } catch (e) {
+      alert(e);
+    }
+  }
 
   handleUploadStart = () => this.setState({ isUploading: true, progress: 0 });
   handleProgress = progress => this.setState({ progress });
@@ -140,21 +180,14 @@ class LandingPage extends React.Component {
     <div style={styles.sectionOtherSpottings}>Other Spottings Near You!</div>
     <Grid>
       <Grid.Row columns={5}>
-        <Grid.Column>
-          <Image src='https://react.semantic-ui.com/images/wireframe/image.png' />
-        </Grid.Column>
-        <Grid.Column>
-          <Image src='https://react.semantic-ui.com/images/wireframe/image.png' />
-        </Grid.Column>
-        <Grid.Column>
-          <Image src='https://react.semantic-ui.com/images/wireframe/image.png' />
-        </Grid.Column>
-        <Grid.Column>
-          <Image src='https://react.semantic-ui.com/images/wireframe/image.png' />
-        </Grid.Column>
-        <Grid.Column>
-          <Image src='https://react.semantic-ui.com/images/wireframe/image.png' />
-        </Grid.Column>
+        {
+          this.state.nearbyPostings.map((posting, i) => {
+            if (i >= 5) return null;
+            return <Grid.Column key={i}>
+                <Image src={posting.url} />
+              </Grid.Column>
+          })
+        }
       </Grid.Row>
     </Grid>
 
