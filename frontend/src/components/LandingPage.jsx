@@ -69,20 +69,18 @@ class LandingPage extends React.Component {
       maximumAge: 0
     };
 
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      const {
-        latitude,
-        longitude
-      } = position.coords || {
-        latitude: 37.787672,
-        longitude: -122.396729
-      };
+    const {
+      latitude,
+      longitude
+    } = {
+      latitude: 37.787672,
+      longitude: -122.396729
+    };
 
-      const res = await fetchAnimals(latitude, longitude);
-      this.setState({
-        nearbyPostings: res.data
-      });
-    }, () => {}, options);
+    const res = await fetchAnimals(latitude, longitude);
+    this.setState({
+      nearbyPostings: res.data
+    });
   }
 
   handleUploadStart = () => this.setState({ isUploading: true, progress: 0 });
@@ -94,27 +92,25 @@ class LandingPage extends React.Component {
   };
   handleUploadSuccess = filename => {
     this.setState({ avatar: filename, progress: 100, isUploading: false });
-    navigator.geolocation.getCurrentPosition((position) => {
-      firebase
-        .storage()
-        .ref("images")
-        .child(filename)
-        .getDownloadURL()
-        .then(url => {
-          axios.post('http://localhost:5000/save_image', {
-            user: 'Fred',
-            url: url,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          })
-          .then(function (response) {
-            console.log(response);
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+    firebase
+      .storage()
+      .ref("images")
+      .child(filename)
+      .getDownloadURL()
+      .then(url => {
+        axios.post('http://localhost:5000/save_image', {
+          user: 'Fred',
+          url: url,
+          latitude: 37.787672,
+          longitude: -122.396729,
+        })
+        .then(function (response) {
+          console.log(response);
+        })
+        .catch(function (error) {
+          console.log(error);
         });
-    });
+      });
   };
 
   render = () => {

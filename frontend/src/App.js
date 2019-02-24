@@ -21,7 +21,6 @@ class App extends Component {
       <div className="App">
         <Menu inverted color='purple'>
           <Menu.Item><Link to='/'> Home </Link></Menu.Item>
-          <Menu.Item><Link to='/birds'> Birds </Link></Menu.Item>
         </Menu>
 
         <section>
