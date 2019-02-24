@@ -6,6 +6,10 @@ import {
   Button,
   Image
 } from 'semantic-ui-react'
+// First way to import
+import {
+  ClipLoader
+} from 'react-spinners';
 
 class HereMap extends React.Component {
 
@@ -21,14 +25,25 @@ class HereMap extends React.Component {
       'app_id': '4c44HqHW1MFRVHTOF77q',
       'app_code': 'BsTdDoavvrz6EFyyqFn1Qw'
     });
+
+    this.state = {
+      loading: true
+    }
   }
 
   async componentDidMount() {
-    navigator.geolocation.getCurrentPosition((postion) => {
+    this.setState({
+      loading: true
+    })
+    navigator.geolocation.getCurrentPosition((position) => {
+      console.log(position);
+      this.setState({
+        loading: false
+      })
       const {
         latitude,
         longitude
-      } = postion.coords || {
+      } = position.coords || {
         latitude: 37.787672,
         longitude: -122.396729
       };
@@ -50,6 +65,17 @@ class HereMap extends React.Component {
 
   render = () => {
     return <div style={this.style} id="mapContainer">
+      {
+        this.state.loading &&
+        <div style={{display: 'flex', justifyContent: 'center'}}>
+          <ClipLoader
+            sizeUnit={"px"}
+            size={150}
+            color={'#123abc'}
+            loading={this.state.loading}
+          />
+        </div>
+      }
     </div>
   }
 }
